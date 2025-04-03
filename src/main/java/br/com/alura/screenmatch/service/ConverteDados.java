@@ -1,6 +1,5 @@
 package br.com.alura.screenmatch.service;
 
-import br.com.alura.screenmatch.model.DadosSerie;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -15,8 +14,13 @@ public class ConverteDados implements IConverteDados{
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        //TIP Então, após return passamos mapper que é o objeto do Jackson que faz a
-        // conversão, e pediremos para realizar a leitura do json e tente transformar
-        // na classe que a pessoa passou. Então escrevemos .readValue(json, classe).
+        /*TIP Então, após return passamos mapper que é o objeto do Jackson que faz a
+          conversão, e pediremos para realizar a leitura do json e tente transformar
+          na classe que a pessoa passou. Então escrevemos .readValue(json, classe).*/
+
+        /*TIP
+          Notamos que como o readValue lança uma exceção,
+          precisamos cobri-lo com um try/catch, ou jogar na assinatura do metodo.
+         */
     }
 }
