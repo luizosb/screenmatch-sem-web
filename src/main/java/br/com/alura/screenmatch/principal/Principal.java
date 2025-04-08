@@ -3,12 +3,12 @@ package br.com.alura.screenmatch.principal;
 import br.com.alura.screenmatch.model.DadosEpisodio;
 import br.com.alura.screenmatch.model.DadosSerie;
 import br.com.alura.screenmatch.model.DadosTemporada;
+import br.com.alura.screenmatch.model.Episodio;
 import br.com.alura.screenmatch.service.ConsumoAPI;
 import br.com.alura.screenmatch.service.ConverteDados;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -52,5 +52,81 @@ public class Principal {
         temporadaList.forEach(t -> t.episodios().forEach(e-> System.out.println(e.titulo())));
 
         temporadaList.forEach(System.out::println);
+
+        List <DadosEpisodio> dadosEpisodioList = temporadaList.stream()
+                .flatMap(t -> t.episodios().stream())
+                .collect(Collectors.toList());
+
+        dadosEpisodioList.stream()
+                .filter(e-> !e.avaliacao().equalsIgnoreCase("N/A"))
+                .sorted(Comparator.comparing(DadosEpisodio::avaliacao).reversed())
+                .limit(5)
+                .forEach(System.out::println);
+
+        List <Episodio> episodios = temporadaList.stream()
+                .flatMap(t -> t.episodios().stream()
+                        .map(e-> new Episodio(t.numeroTemporada(), e)))
+                .collect(Collectors.toList());
+
+        episodios.forEach(System.out::println);
+
+        System.out.println("Digite um trecho do titulo do episodio: ");
+        var trechoTitulo = leitura.nextLine();
+
+        /*
+        O principal uso do Optional é fornecer um tipo de retorno alternativo quando um metodo pode não retornar um valor.
+         */
+        Optional<Episodio> episodioBuscado = episodios.stream()
+                .filter(e -> e.getTitulo().toUpperCase().contains(trechoTitulo.toUpperCase()))
+                .findFirst();
+
+        /*
+        Ao utilizar o findAny em uma coleção com threads, cada thread pode buscar um elemento da coleção de forma
+        paralela, tornando a busca mais rápida e eficiente.
+        É importante ressaltar que o findAny não garante que sempre será retornado o mesmo elemento, pois a ordem
+        de busca pode variar entre as threads.
+         */
+
+        if(episodioBuscado.isPresent()){
+            System.out.println("Episodio encontrado: " );
+            System.out.println("Temporada: " + episodioBuscado.get().getTemporada());
+        } else {
+            System.out.println("Episodio não encontrado");
+        }
+
+//        System.out.println("A partir de qual ano gostaria de ver os episodios?");
+//        var ano = leitura.nextInt();
+//
+//        LocalDate localDate = LocalDate.of(ano, 1, 1);
+//
+//
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+//
+//        episodios.stream()
+//                .filter(e-> e.getDataLancamento() != null && e.getDataLancamento().isAfter(localDate))
+//                .forEach(e-> System.out.println(
+//                        "Temporada " + e.getTemporada() +
+//                                " Episodio " + e.getTitulo() +
+//                                " Data lançamento " + e.getDataLancamento())
+//                );
+
+        Map <Integer, Double> avaliacoesPorTemporada = episodios.stream()
+                .filter(e-> e.getAvaliacao() > 0.0)
+                .collect(Collectors.groupingBy(Episodio::getTemporada,
+                         Collectors.averagingDouble(Episodio::getAvaliacao)));
+        System.out.println(avaliacoesPorTemporada);
+
+        DoubleSummaryStatistics est = episodios.stream()
+                .filter(e-> e.getAvaliacao() > 0.0)
+                .collect(Collectors.summarizingDouble(Episodio::getAvaliacao));
+
+        /*
+        A classe DoubleSummaryStatistics é uma classe utilitária que permite calcular estatísticas como soma, média,
+        valor mínimo e máximo, além do total de elementos em uma coleção de valores do tipo double.
+        Ela possui métodos como getSum(), getAverage(), getMin(), getMax() e getCount(), que retornam os respectivos valores estatísticos.
+         */
+
+        System.out.println("Média: " + est.getAverage());
+
     }
 }
